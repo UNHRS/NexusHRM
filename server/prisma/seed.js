@@ -36,7 +36,7 @@ async function createEmployee({ user, employee }) {
 }
 
 async function main() {
-  await prisma.$executeRawUnsafe('TRUNCATE TABLE "LeaveRequest", "Attendance", "User", "Employee", "Department" RESTART IDENTITY CASCADE');
+  await prisma.$executeRawUnsafe('TRUNCATE TABLE "Candidate", "JobOpening", "LeaveRequest", "Attendance", "User", "Employee", "Department" RESTART IDENTITY CASCADE');
 
   const recruitment = await prisma.department.create({ data: { name: 'Recruitment Operations' } });
   const documentation = await prisma.department.create({ data: { name: 'Documentation' } });
@@ -161,6 +161,46 @@ async function main() {
         status: 'REJECTED',
         approvedBy: managerB.id
       }
+    ]
+  });
+
+  const recruiter = await prisma.jobOpening.create({
+    data: {
+      title: 'Senior Recruitment Specialist',
+      departmentId: recruitment.id,
+      location: 'Kathmandu',
+      employmentType: 'FULL_TIME',
+      status: 'OPEN',
+      description: 'Lead sourcing, screening, and onboarding coordination for enterprise HR clients.'
+    }
+  });
+  const records = await prisma.jobOpening.create({
+    data: {
+      title: 'Documentation Quality Analyst',
+      departmentId: documentation.id,
+      location: 'Lalitpur',
+      employmentType: 'FULL_TIME',
+      status: 'OPEN',
+      description: 'Review employee files, verify compliance documents, and maintain audit-ready records.'
+    }
+  });
+  await prisma.jobOpening.create({
+    data: {
+      title: 'Compliance Intern',
+      departmentId: compliance.id,
+      location: 'Hybrid',
+      employmentType: 'INTERN',
+      status: 'ON_HOLD',
+      description: 'Support HR compliance reviews and checklist preparation.'
+    }
+  });
+
+  await prisma.candidate.createMany({
+    data: [
+      { fullName: 'Asmita Khadka', email: 'asmita.khadka@example.com', phone: '9811000001', source: 'LinkedIn', stage: 'SCREENING', jobOpeningId: recruiter.id, notes: 'Strong sourcing background.' },
+      { fullName: 'Kiran Poudel', email: 'kiran.poudel@example.com', phone: '9811000002', source: 'Referral', stage: 'INTERVIEW', jobOpeningId: recruiter.id, notes: 'Interview scheduled with Srijana.' },
+      { fullName: 'Nisha Tamang', email: 'nisha.tamang@example.com', phone: '9811000003', source: 'Job portal', stage: 'APPLIED', jobOpeningId: records.id, notes: 'Needs document-control assessment.' },
+      { fullName: 'Suman Bista', email: 'suman.bista@example.com', phone: '9811000004', source: 'Walk-in', stage: 'OFFER', jobOpeningId: records.id, notes: 'Offer draft pending.' }
     ]
   });
 

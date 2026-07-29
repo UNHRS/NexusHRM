@@ -1,4 +1,4 @@
-import { Building2, CalendarCheck, ClipboardCheck, LogOut, Network, Users } from 'lucide-react';
+import { BriefcaseBusiness, Building2, CalendarCheck, ClipboardCheck, LogOut, Network, Users } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -7,12 +7,14 @@ const nav = {
     ['Dashboard', '/admin', Building2],
     ['Employees', '/admin/employees', Users],
     ['Departments', '/admin/departments', Network],
+    ['Recruitment', '/recruitment', BriefcaseBusiness],
     ['Leave', '/manager/leave-approvals', ClipboardCheck]
   ],
   MANAGER: [
     ['Dashboard', '/manager', Building2],
     ['Attendance', '/manager/team-attendance', CalendarCheck],
-    ['Leave Approvals', '/manager/leave-approvals', ClipboardCheck]
+    ['Leave Approvals', '/manager/leave-approvals', ClipboardCheck],
+    ['Recruitment', '/recruitment', BriefcaseBusiness]
   ],
   EMPLOYEE: [
     ['Dashboard', '/employee', Building2],

@@ -11,6 +11,7 @@ model Department {
   id        Int        @id @default(autoincrement())
   name      String     @unique
   employees Employee[]
+  jobOpenings JobOpening[]
   createdAt DateTime   @default(now())
 }
 
@@ -90,5 +91,53 @@ enum LeaveType {
 enum LeaveStatus {
   PENDING
   APPROVED
+  REJECTED
+}
+
+model JobOpening {
+  id           Int             @id @default(autoincrement())
+  title        String
+  department   Department      @relation(fields: [departmentId], references: [id])
+  departmentId Int
+  location     String
+  employmentType EmploymentType @default(FULL_TIME)
+  status       JobStatus       @default(OPEN)
+  description  String?
+  candidates   Candidate[]
+  createdAt    DateTime        @default(now())
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+enum JobStatus {
+  OPEN
+  ON_HOLD
+  CLOSED
+}
+
+model Candidate {
+  id           Int             @id @default(autoincrement())
+  fullName     String
+  email        String
+  phone        String?
+  source       String?
+  stage        CandidateStage  @default(APPLIED)
+  jobOpening   JobOpening      @relation(fields: [jobOpeningId], references: [id])
+  jobOpeningId Int
+  notes        String?
+  createdAt    DateTime        @default(now())
+}
+
+enum CandidateStage {
+  APPLIED
+  SCREENING
+  INTERVIEW
+  OFFER
+  HIRED
   REJECTED
 }

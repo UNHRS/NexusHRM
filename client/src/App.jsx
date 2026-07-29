@@ -11,6 +11,7 @@ import EmployeeDashboard from './pages/employee/Dashboard.jsx';
 import MyProfile from './pages/employee/MyProfile.jsx';
 import MyAttendance from './pages/employee/MyAttendance.jsx';
 import MyLeave from './pages/employee/MyLeave.jsx';
+import Recruitment from './pages/Recruitment.jsx';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
       <Route path="/manager" element={<ProtectedRoute roles={['MANAGER']}><ManagerDashboard /></ProtectedRoute>} />
       <Route path="/manager/team-attendance" element={<ProtectedRoute roles={['MANAGER']}><TeamAttendance /></ProtectedRoute>} />
       <Route path="/manager/leave-approvals" element={<ProtectedRoute roles={['MANAGER', 'ADMIN']}><LeaveApprovals /></ProtectedRoute>} />
+      <Route path="/recruitment" element={<ProtectedRoute roles={['ADMIN', 'MANAGER']}><Recruitment /></ProtectedRoute>} />
       <Route path="/employee" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><EmployeeDashboard /></ProtectedRoute>} />
       <Route path="/employee/profile" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><MyProfile /></ProtectedRoute>} />
       <Route path="/employee/attendance" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><MyAttendance /></ProtectedRoute>} />
