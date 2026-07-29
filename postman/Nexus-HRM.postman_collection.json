@@ -1,0 +1,164 @@
+{
+  "info": {
+    "name": "Nexus HRM",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": { "type": "noauth" },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login as Admin",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/auth/login", "body": { "mode": "raw", "raw": "{\"username\":\"admin\",\"password\":\"password123\"}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "const json = pm.response.json();", "pm.test('admin role', () => pm.expect(json.user.role).to.eql('ADMIN'));", "pm.environment.set('admin_token', json.token);"] } }]
+        },
+        {
+          "name": "Login as Manager",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/auth/login", "body": { "mode": "raw", "raw": "{\"username\":\"manager.recruitment\",\"password\":\"password123\"}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "const json = pm.response.json();", "pm.test('manager role', () => pm.expect(json.user.role).to.eql('MANAGER'));", "pm.environment.set('manager_token', json.token);"] } }]
+        },
+        {
+          "name": "Login as Employee",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/auth/login", "body": { "mode": "raw", "raw": "{\"username\":\"employee.aasha\",\"password\":\"password123\"}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "const json = pm.response.json();", "pm.test('employee role', () => pm.expect(json.user.role).to.eql('EMPLOYEE'));", "pm.environment.set('employee_token', json.token);"] } }]
+        },
+        {
+          "name": "Login with invalid credentials",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/auth/login", "body": { "mode": "raw", "raw": "{\"username\":\"admin\",\"password\":\"wrong\"}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 401', () => pm.response.to.have.status(401));", "pm.test('has error', () => pm.expect(pm.response.json()).to.have.property('error'));"] } }]
+        },
+        {
+          "name": "Get current user",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }], "url": "{{base_url}}/auth/me" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "pm.test('returns user', () => pm.expect(pm.response.json().user.role).to.eql('ADMIN'));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "Get all employees as Admin",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }], "url": "{{base_url}}/employees" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "pm.test('array response', () => pm.expect(pm.response.json()).to.be.an('array'));"] } }]
+        },
+        {
+          "name": "Get employees as Employee",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }], "url": "{{base_url}}/employees" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "const rows = pm.response.json();", "pm.test('employee sees self only', () => pm.expect(rows.length).to.eql(1));"] } }]
+        },
+        {
+          "name": "Create employee",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/employees", "body": { "mode": "raw", "raw": "{\"fullName\":\"Postman Employee\",\"email\":\"postman.employee@nexushrm.local\",\"phone\":\"9801999999\",\"designation\":\"API Tester\",\"joiningDate\":\"2026-07-29\",\"departmentId\":1,\"username\":\"postman.employee\",\"password\":\"password123\",\"role\":\"EMPLOYEE\"}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 201', () => pm.response.to.have.status(201));", "const json = pm.response.json();", "pm.test('created employee id', () => pm.expect(json.id).to.be.a('number'));", "pm.environment.set('new_employee_id', json.id);"] } }]
+        },
+        {
+          "name": "Update employee",
+          "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/employees/{{new_employee_id}}", "body": { "mode": "raw", "raw": "{\"designation\":\"Senior API Tester\"}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "pm.test('designation updated', () => pm.expect(pm.response.json().designation).to.eql('Senior API Tester'));"] } }]
+        },
+        {
+          "name": "Create employee as Employee fails",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/employees", "body": { "mode": "raw", "raw": "{\"fullName\":\"Forbidden User\",\"email\":\"forbidden@nexushrm.local\",\"designation\":\"Nope\",\"joiningDate\":\"2026-07-29\",\"departmentId\":1}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 403', () => pm.response.to.have.status(403));"] } }]
+        },
+        {
+          "name": "Delete employee",
+          "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }], "url": "{{base_url}}/employees/{{new_employee_id}}" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "pm.test('delete ok', () => pm.expect(pm.response.json().ok).to.eql(true));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "Departments",
+      "item": [
+        {
+          "name": "List departments",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }], "url": "{{base_url}}/departments" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "pm.test('array response', () => pm.expect(pm.response.json()).to.be.an('array'));"] } }]
+        },
+        {
+          "name": "Create department",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/departments", "body": { "mode": "raw", "raw": "{\"name\":\"Postman Lab\"}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 201', () => pm.response.to.have.status(201));", "pm.environment.set('new_department_id', pm.response.json().id);"] } }]
+        },
+        {
+          "name": "Update department",
+          "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/departments/{{new_department_id}}", "body": { "mode": "raw", "raw": "{\"name\":\"Postman Lab Updated\"}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "pm.test('name updated', () => pm.expect(pm.response.json().name).to.eql('Postman Lab Updated'));"] } }]
+        },
+        {
+          "name": "Create department as Employee fails",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/departments", "body": { "mode": "raw", "raw": "{\"name\":\"Forbidden Department\"}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 403', () => pm.response.to.have.status(403));"] } }]
+        },
+        {
+          "name": "Delete department",
+          "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }], "url": "{{base_url}}/departments/{{new_department_id}}" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "Check-in as Employee",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }], "url": "{{base_url}}/attendance/check-in" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 201 or 409', () => pm.expect([201,409]).to.include(pm.response.code));"] } }]
+        },
+        {
+          "name": "Check-in again same day fails",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }], "url": "{{base_url}}/attendance/check-in" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 409', () => pm.response.to.have.status(409));"] } }]
+        },
+        {
+          "name": "Check-out as Employee",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }], "url": "{{base_url}}/attendance/check-out" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200 or 409', () => pm.expect([200,409]).to.include(pm.response.code));"] } }]
+        },
+        {
+          "name": "Get own attendance",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }], "url": "{{base_url}}/attendance/me" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "pm.test('array response', () => pm.expect(pm.response.json()).to.be.an('array'));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "Leave",
+      "item": [
+        {
+          "name": "Apply leave for approval",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/leave", "body": { "mode": "raw", "raw": "{\"leaveType\":\"CASUAL\",\"startDate\":\"2026-08-10\",\"endDate\":\"2026-08-11\",\"reason\":\"Postman approval\"}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 201', () => pm.response.to.have.status(201));", "const json = pm.response.json();", "pm.test('pending status', () => pm.expect(json.status).to.eql('PENDING'));", "pm.environment.set('new_leave_id', json.id);"] } }]
+        },
+        {
+          "name": "Apply leave for rejection",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/leave", "body": { "mode": "raw", "raw": "{\"leaveType\":\"UNPAID\",\"startDate\":\"2026-08-12\",\"endDate\":\"2026-08-12\",\"reason\":\"Postman rejection\"}" } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 201', () => pm.response.to.have.status(201));", "pm.environment.set('reject_leave_id', pm.response.json().id);"] } }]
+        },
+        {
+          "name": "Get pending leaves as Manager",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{manager_token}}" }], "url": "{{base_url}}/leave/pending" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "const rows = pm.response.json();", "pm.test('new request appears', () => pm.expect(rows.map(r => r.id)).to.include(Number(pm.environment.get('new_leave_id'))));"] } }]
+        },
+        {
+          "name": "Approve leave as Manager",
+          "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{manager_token}}" }], "url": "{{base_url}}/leave/{{new_leave_id}}/approve" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "pm.test('approved', () => pm.expect(pm.response.json().status).to.eql('APPROVED'));"] } }]
+        },
+        {
+          "name": "Reject leave as Manager",
+          "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{manager_token}}" }], "url": "{{base_url}}/leave/{{reject_leave_id}}/reject" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "pm.test('rejected', () => pm.expect(pm.response.json().status).to.eql('REJECTED'));"] } }]
+        },
+        {
+          "name": "Get own leave history",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }], "url": "{{base_url}}/leave/me" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('status 200', () => pm.response.to.have.status(200));", "const statuses = pm.response.json().map(r => r.status);", "pm.test('contains approved/rejected statuses', () => { pm.expect(statuses).to.include('APPROVED'); pm.expect(statuses).to.include('REJECTED'); });"] } }]
+        }
+      ]
+    }
+  ]
+}
