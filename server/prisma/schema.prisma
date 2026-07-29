@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  employees Employee[]
+  createdAt DateTime   @default(now())
+}
+
+model Employee {
+  id            Int            @id @default(autoincrement())
+  fullName      String
+  email         String         @unique
+  phone         String?
+  designation   String
+  joiningDate   DateTime
+  department    Department     @relation(fields: [departmentId], references: [id])
+  departmentId  Int
+  managerId     Int?
+  manager       Employee?      @relation("ManagerReports", fields: [managerId], references: [id])
+  reports       Employee[]     @relation("ManagerReports")
+  user          User?
+  attendance    Attendance[]
+  leaveRequests LeaveRequest[]
+  createdAt     DateTime       @default(now())
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  role         Role     @default(EMPLOYEE)
+  employee     Employee @relation(fields: [employeeId], references: [id])
+  employeeId   Int      @unique
+  createdAt    DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+model Attendance {
+  id         Int              @id @default(autoincrement())
+  employee   Employee         @relation(fields: [employeeId], references: [id])
+  employeeId Int
+  date       DateTime         @db.Date
+  checkIn    DateTime?
+  checkOut   DateTime?
+  status     AttendanceStatus @default(PRESENT)
+
+  @@unique([employeeId, date])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+}
+
+model LeaveRequest {
+  id         Int         @id @default(autoincrement())
+  employee   Employee    @relation(fields: [employeeId], references: [id])
+  employeeId Int
+  leaveType  LeaveType
+  startDate  DateTime    @db.Date
+  endDate    DateTime    @db.Date
+  reason     String?
+  status     LeaveStatus @default(PENDING)
+  approvedBy Int?
+  createdAt  DateTime    @default(now())
+}
+
+enum LeaveType {
+  SICK
+  CASUAL
+  ANNUAL
+  UNPAID
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
