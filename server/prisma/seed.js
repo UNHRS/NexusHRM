@@ -36,11 +36,7 @@ async function createEmployee({ user, employee }) {
 }
 
 async function main() {
-  await prisma.leaveRequest.deleteMany();
-  await prisma.attendance.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.employee.deleteMany();
-  await prisma.department.deleteMany();
+  await prisma.$executeRawUnsafe('TRUNCATE TABLE "LeaveRequest", "Attendance", "User", "Employee", "Department" RESTART IDENTITY CASCADE');
 
   const recruitment = await prisma.department.create({ data: { name: 'Recruitment Operations' } });
   const documentation = await prisma.department.create({ data: { name: 'Documentation' } });
