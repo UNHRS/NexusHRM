@@ -43,6 +43,13 @@ Then open:
 - API health: http://localhost:5000/health
 - Adminer: http://localhost:8080
 
+If port `5432` is already in use locally, start Docker with another host port and update `server/.env`:
+
+```bash
+POSTGRES_PORT=55432 docker compose up -d
+DATABASE_URL=postgresql://postgres:postgres@localhost:55432/nexus_hrm
+```
+
 ## Seeded Users
 
 All seeded users use password `password123`.
