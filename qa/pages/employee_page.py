@@ -23,7 +23,7 @@ class EmployeePage(BasePage):
         field.clear()
         field.send_keys(designation)
         self.click_test_id("employee-save-button")
-        self.text_contains(designation)
+        self.wait.until(lambda driver: len(driver.find_elements(By.XPATH, f"//table[@data-testid='employee-table']//tr[contains(., '{name}') and contains(., '{designation}')]")) == 1)
 
     def delete_employee(self, name):
         self.driver.execute_script("window.confirm = () => true")

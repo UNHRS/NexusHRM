@@ -91,18 +91,28 @@ router.post('/', requireRole(['ADMIN']), async (req, res, next) => {
 router.put('/:id', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'Invalid employee id' });
     if (req.user.role !== 'ADMIN' && req.user.employeeId !== id) return res.status(403).json({ error: 'Forbidden' });
     const data =
       req.user.role === 'ADMIN'
         ? employeeSchema.partial().parse(req.body)
         : profileSchema.parse(req.body);
+    const updateData = {
+      fullName: data.fullName,
+      email: data.email,
+      phone: data.phone,
+      designation: data.designation,
+      joiningDate: data.joiningDate ? new Date(data.joiningDate) : undefined
+    };
+    if (req.user.role === 'ADMIN' && data.departmentId !== undefined) {
+      updateData.department = { connect: { id: data.departmentId } };
+    }
+    if (req.user.role === 'ADMIN' && data.managerId !== undefined) {
+      updateData.manager = data.managerId ? { connect: { id: data.managerId } } : { disconnect: true };
+    }
     const employee = await prisma.employee.update({
       where: { id },
-      data: {
-        ...data,
-        joiningDate: data.joiningDate ? new Date(data.joiningDate) : undefined,
-        managerId: data.managerId === undefined ? undefined : data.managerId || null
-      },
+      data: updateData,
       include
     });
     if (req.user.role === 'ADMIN' && (data.username || data.password || data.role)) {
