@@ -29,4 +29,4 @@ class EmployeePage(BasePage):
         self.driver.execute_script("window.confirm = () => true")
         row = self.driver.find_element(By.XPATH, f"//tr[contains(., '{name}')]")
         row.find_element(By.XPATH, ".//button[contains(., 'Delete')]").click()
-        self.wait.until(lambda driver: name not in driver.find_element(By.TAG_NAME, "body").text)
+        self.wait.until(lambda driver: len(driver.find_elements(By.XPATH, f"//table[@data-testid='employee-table']//tr[contains(., '{name}')]")) == 0)
