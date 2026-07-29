@@ -7,6 +7,7 @@ import departmentRoutes from './routes/department.routes.js';
 import attendanceRoutes from './routes/attendance.routes.js';
 import leaveRoutes from './routes/leave.routes.js';
 import recruitmentRoutes from './routes/recruitment.routes.js';
+import reportRoutes from './routes/report.routes.js';
 import { errorHandler, notFound } from './middleware/error.middleware.js';
 
 export const app = express();
@@ -22,5 +23,6 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/leave', leaveRoutes);
 app.use('/api/recruitment', recruitmentRoutes);
+app.use('/api/reports', reportRoutes);
 app.use(notFound);
 app.use(errorHandler);
