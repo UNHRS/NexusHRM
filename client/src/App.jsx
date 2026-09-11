@@ -18,15 +18,18 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/admin" element={<ProtectedRoute roles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+      <Route path="/admin/dashboard" element={<ProtectedRoute roles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/employees" element={<ProtectedRoute roles={['ADMIN']}><Employees /></ProtectedRoute>} />
       <Route path="/admin/departments" element={<ProtectedRoute roles={['ADMIN']}><Departments /></ProtectedRoute>} />
-      <Route path="/manager" element={<ProtectedRoute roles={['MANAGER']}><ManagerDashboard /></ProtectedRoute>} />
+      <Route path="/manager" element={<Navigate to="/manager/dashboard" replace />} />
+      <Route path="/manager/dashboard" element={<ProtectedRoute roles={['MANAGER']}><ManagerDashboard /></ProtectedRoute>} />
       <Route path="/manager/team-attendance" element={<ProtectedRoute roles={['MANAGER']}><TeamAttendance /></ProtectedRoute>} />
       <Route path="/manager/leave-approvals" element={<ProtectedRoute roles={['MANAGER', 'ADMIN']}><LeaveApprovals /></ProtectedRoute>} />
       <Route path="/recruitment" element={<ProtectedRoute roles={['ADMIN', 'MANAGER']}><Recruitment /></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute roles={['ADMIN', 'MANAGER']}><Reports /></ProtectedRoute>} />
-      <Route path="/employee" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><EmployeeDashboard /></ProtectedRoute>} />
+      <Route path="/employee" element={<Navigate to="/employee/dashboard" replace />} />
+      <Route path="/employee/dashboard" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><EmployeeDashboard /></ProtectedRoute>} />
       <Route path="/employee/profile" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><MyProfile /></ProtectedRoute>} />
       <Route path="/employee/attendance" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><MyAttendance /></ProtectedRoute>} />
       <Route path="/employee/leave" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><MyLeave /></ProtectedRoute>} />
