@@ -5,6 +5,7 @@ import Layout from '../../components/Layout.jsx';
 import { PageHeader, Stat, StatusBadge } from '../../components/Ui.jsx';
 import DataTable from '../../components/DataTable.jsx';
 import { api } from '../../api/axiosInstance.js';
+import OperationsWidgets from '../../components/OperationsWidgets.jsx';
 
 export default function AdminDashboard() {
   const [employees, setEmployees] = useState([]);
@@ -30,6 +31,7 @@ export default function AdminDashboard() {
   return (
     <Layout>
       <PageHeader title="Overview" eyebrow="Company operations" description="A current view of your people, time, and workplace activity." actions={<Link className="btn btn-primary" to="/admin/payroll"><DollarSign size={16} /> Generate payroll</Link>} />
+      <OperationsWidgets />
       <div data-testid="admin-dashboard" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <Stat label="Total employees" value={employees.length} detail="Active records" />
         <Stat label="Departments" value={departments.length} detail="Active teams" />

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/role.middleware.js';
 import { prisma } from '../utils/prisma.js';
+import { logAction } from '../utils/audit.js';
 
 const router = Router();
 
@@ -87,6 +88,7 @@ router.post('/', requireRole(['ADMIN']), async (req, res, next) => {
       });
     }
     const result = await prisma.employee.findUnique({ where: { id: employee.id }, include });
+    await logAction({ actorId: req.user.employeeId, action: 'EMPLOYEE_CREATED', targetType: 'Employee', targetId: employee.id });
     res.status(201).json(result);
   } catch (err) {
     next(err);
@@ -139,7 +141,9 @@ router.put('/:id', async (req, res, next) => {
     if (req.user.role === 'ADMIN' && data.basicSalary !== undefined) {
       await prisma.salaryStructure.upsert({ where: { employeeId: id }, update: { basicSalary: data.basicSalary, allowances: data.allowances || 0 }, create: { employeeId: id, basicSalary: data.basicSalary, allowances: data.allowances || 0, effectiveFrom: new Date() } });
     }
-    res.json(await prisma.employee.findUnique({ where: { id }, include }));
+    const result = await prisma.employee.findUnique({ where: { id }, include });
+    await logAction({ actorId: req.user.employeeId, action: 'EMPLOYEE_UPDATED', targetType: 'Employee', targetId: id });
+    res.json(result);
   } catch (err) {
     next(err);
   }
@@ -153,6 +157,7 @@ router.delete('/:id', requireRole(['ADMIN']), async (req, res, next) => {
     await prisma.leaveRequest.deleteMany({ where: { employeeId: id } });
     await prisma.employee.updateMany({ where: { managerId: id }, data: { managerId: null } });
     await prisma.employee.delete({ where: { id } });
+    await logAction({ actorId: req.user.employeeId, action: 'EMPLOYEE_DELETED', targetType: 'Employee', targetId: id });
     res.json({ ok: true });
   } catch (err) {
     next(err);

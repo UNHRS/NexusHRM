@@ -86,6 +86,10 @@ Key route groups:
 - `/attendance`: check-in/out, own/team/all attendance
 - `/leave`: apply, own history, pending approvals, approve/reject
 - `/payroll`: generate/finalize runs, admin history, and finalized employee payslips
+- `/holidays`: public holiday calendar and admin CRUD
+- `/documents`: employee document upload, download, expiry, and deletion
+- `/announcements`: role-scoped active announcements
+- `/audit-logs`: paginated admin audit history
 
 Use the Postman collection in `postman/` for executable API documentation.
 
@@ -94,6 +98,16 @@ Use the Postman collection in `postman/` for executable API documentation.
 ```
 
 The Newman HTML report is written to `postman/report.html`.
+
+## Phase 2 screens
+
+- Admin holidays: `/admin/holidays`
+- Admin announcements: `/admin/announcements`
+- Admin audit log: `/admin/audit-log`
+- Shared employee documents: `/documents`
+- Report trends: `/reports/trends`
+
+Uploaded documents are stored locally under `server/uploads/documents/` and are intentionally ignored by Git.
 
 ## QA Suite
 

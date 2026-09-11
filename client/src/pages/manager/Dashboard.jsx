@@ -3,6 +3,7 @@ import { api } from '../../api/axiosInstance.js';
 import DataTable from '../../components/DataTable.jsx';
 import Layout from '../../components/Layout.jsx';
 import { PageHeader, Stat, StatusBadge } from '../../components/Ui.jsx';
+import OperationsWidgets from '../../components/OperationsWidgets.jsx';
 
 export default function ManagerDashboard() {
   const [attendance, setAttendance] = useState([]);
@@ -20,6 +21,7 @@ export default function ManagerDashboard() {
   return (
     <Layout>
       <PageHeader title="Manager Dashboard" eyebrow="Team operations" />
+      <OperationsWidgets />
       <div data-testid="manager-dashboard" className="grid gap-4 md:grid-cols-3">
         <Stat label="Team records today" value={todayRows.length} detail="Attendance entries" />
         <Stat label="Pending leaves" value={leaves.length} detail="Direct reports" />

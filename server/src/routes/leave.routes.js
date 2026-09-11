@@ -4,6 +4,7 @@ import { requireAuth } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/role.middleware.js';
 import { toDateOnly } from '../utils/dates.js';
 import { prisma } from '../utils/prisma.js';
+import { logAction } from '../utils/audit.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -54,7 +55,9 @@ async function decide(req, res, next, status) {
     if (!leave) return res.status(404).json({ error: 'Leave request not found' });
     const allowed = req.user.role === 'ADMIN' || (req.user.role === 'MANAGER' && leave.employee.managerId === req.user.employeeId);
     if (!allowed) return res.status(403).json({ error: 'Forbidden' });
-    res.json(await prisma.leaveRequest.update({ where: { id: leave.id }, data: { status, approvedBy: req.user.employeeId }, include }));
+    const updated = await prisma.leaveRequest.update({ where: { id: leave.id }, data: { status, approvedBy: req.user.employeeId }, include });
+    await logAction({ actorId: req.user.employeeId, action: status === 'APPROVED' ? 'LEAVE_APPROVED' : 'LEAVE_REJECTED', targetType: 'LeaveRequest', targetId: leave.id, metadata: { previousStatus: leave.status } });
+    res.json(updated);
   } catch (err) {
     next(err);
   }

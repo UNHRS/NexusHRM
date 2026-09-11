@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/role.middleware.js';
 import { prisma } from '../utils/prisma.js';
+import { logAction } from '../utils/audit.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -19,15 +20,15 @@ function monthDates(month, year) {
   return dates;
 }
 
-function workingDates(month, year) { return monthDates(month, year).filter((date) => !isSaturday(date)); }
+function workingDates(month, year, holidays = new Set()) { return monthDates(month, year).filter((date) => !isSaturday(date) && !holidays.has(dateKey(date))); }
 
-function overlapDates(start, end, month, year) {
-  return workingDates(month, year).filter((date) => date >= start && date <= end);
+function overlapDates(start, end, month, year, holidays) {
+  return workingDates(month, year, holidays).filter((date) => date >= start && date <= end);
 }
 
-async function calculatePayslip(employee, month, year) {
+async function calculatePayslip(employee, month, year, holidays) {
   if (!employee.salaryStructure) throw new Error(`Salary structure missing for ${employee.fullName}`);
-  const dates = workingDates(month, year);
+  const dates = workingDates(month, year, holidays);
   const from = dates[0];
   const to = dates[dates.length - 1];
   const [attendance, leaves] = await Promise.all([
@@ -38,7 +39,7 @@ async function calculatePayslip(employee, month, year) {
   const paidLeaveDates = new Set();
   const unpaidLeaveDates = new Set();
   for (const leave of leaves) {
-    for (const date of overlapDates(leave.startDate, leave.endDate, month, year)) {
+    for (const date of overlapDates(leave.startDate, leave.endDate, month, year, holidays)) {
       (leave.leaveType === 'UNPAID' ? unpaidLeaveDates : paidLeaveDates).add(dateKey(date));
     }
   }
@@ -82,10 +83,12 @@ router.post('/generate', requireRole(['ADMIN']), async (req, res, next) => {
     const existing = await prisma.payrollRun.findUnique({ where: { month_year: { month, year } } });
     if (existing?.status === 'FINALIZED') return res.status(409).json({ error: 'This payroll run is finalized and cannot be recalculated' });
     const employees = await prisma.employee.findMany({ include: { salaryStructure: true }, orderBy: { fullName: 'asc' } });
+    const holidayRows = await prisma.holiday.findMany({ where: { year, date: { gte: new Date(Date.UTC(year, month - 1, 1)), lt: new Date(Date.UTC(year, month, 1)) } } });
+    const holidays = new Set(holidayRows.map((holiday) => dateKey(holiday.date)));
     const missing = employees.filter((employee) => !employee.salaryStructure).map((employee) => employee.fullName);
     if (missing.length) return res.status(400).json({ error: `Salary structure missing for: ${missing.join(', ')}` });
     const slips = [];
-    for (const employee of employees) slips.push(await calculatePayslip(employee, month, year));
+    for (const employee of employees) slips.push(await calculatePayslip(employee, month, year, holidays));
     const run = await prisma.$transaction(async (tx) => {
       const payrollRun = existing || await tx.payrollRun.create({ data: { month, year } });
       await tx.payslip.deleteMany({ where: { payrollRunId: payrollRun.id } });
@@ -101,7 +104,9 @@ router.patch('/:runId/finalize', requireRole(['ADMIN']), async (req, res, next) 
     const run = await prisma.payrollRun.findUnique({ where: { id: Number(req.params.runId) } });
     if (!run) return res.status(404).json({ error: 'Payroll run not found' });
     if (run.status === 'FINALIZED') return res.status(409).json({ error: 'Payroll run is already finalized' });
-    res.json(await prisma.payrollRun.update({ where: { id: run.id }, data: { status: 'FINALIZED' }, include: runInclude }));
+    const finalized = await prisma.payrollRun.update({ where: { id: run.id }, data: { status: 'FINALIZED' }, include: runInclude });
+    await logAction({ actorId: req.user.employeeId, action: 'PAYROLL_FINALIZED', targetType: 'PayrollRun', targetId: run.id, metadata: { month: run.month, year: run.year } });
+    res.json(finalized);
   } catch (err) { next(err); }
 });
 

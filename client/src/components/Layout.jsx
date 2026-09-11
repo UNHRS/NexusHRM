@@ -1,12 +1,12 @@
-import { BarChart3, Building2, CalendarCheck, ClipboardCheck, DollarSign, FileText, LogOut, Menu, Network, Users, X } from 'lucide-react';
+import { BarChart3, Building2, CalendarCheck, ClipboardCheck, DollarSign, FileText, LogOut, Menu, Megaphone, Network, ShieldCheck, Users, X } from 'lucide-react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const nav = {
-  ADMIN: [['Overview', '/admin/dashboard', Building2, 'Overview'], ['Employees', '/admin/employees', Users, 'People'], ['Departments', '/admin/departments', Network, 'People'], ['Leave approvals', '/manager/leave-approvals', ClipboardCheck, 'Time & leave'], ['Payroll', '/admin/payroll', DollarSign, 'Finance'], ['Reports', '/reports', BarChart3, 'Finance']],
+  ADMIN: [['Overview', '/admin/dashboard', Building2, 'Overview'], ['Employees', '/admin/employees', Users, 'People'], ['Documents', '/documents', FileText, 'People'], ['Departments', '/admin/departments', Network, 'People'], ['Holidays', '/admin/holidays', CalendarCheck, 'Time & leave'], ['Leave approvals', '/manager/leave-approvals', ClipboardCheck, 'Time & leave'], ['Payroll', '/admin/payroll', DollarSign, 'Finance'], ['Reports', '/reports', BarChart3, 'Finance'], ['Announcements', '/admin/announcements', Megaphone, 'Finance'], ['Audit log', '/admin/audit-log', ShieldCheck, 'Finance']],
   MANAGER: [['Team overview', '/manager/dashboard', Building2, 'Overview'], ['Attendance', '/manager/team-attendance', CalendarCheck, 'Time & leave'], ['Leave approvals', '/manager/leave-approvals', ClipboardCheck, 'Time & leave'], ['Reports', '/reports', BarChart3, 'Finance']],
-  EMPLOYEE: [['My overview', '/employee/dashboard', Building2, 'Overview'], ['My profile', '/employee/profile', Users, 'People'], ['Attendance', '/employee/attendance', CalendarCheck, 'Time & leave'], ['My leave', '/employee/leave', ClipboardCheck, 'Time & leave'], ['Payslips', '/employee/payslips', FileText, 'Finance']]
+  EMPLOYEE: [['My overview', '/employee/dashboard', Building2, 'Overview'], ['My profile', '/employee/profile', Users, 'People'], ['Documents', '/documents', FileText, 'People'], ['Attendance', '/employee/attendance', CalendarCheck, 'Time & leave'], ['My leave', '/employee/leave', ClipboardCheck, 'Time & leave'], ['Payslips', '/employee/payslips', FileText, 'Finance']]
 };
 
 function initials(name = '') { return name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase(); }

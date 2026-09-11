@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api/axiosInstance.js';
 import DataTable from '../components/DataTable.jsx';
 import Layout from '../components/Layout.jsx';
@@ -21,7 +22,7 @@ export default function Reports() {
 
   return (
     <Layout>
-      <PageHeader title="Reports" eyebrow={`${report.scope.toLowerCase()} analytics`} />
+      <PageHeader title="Reports" eyebrow={`${report.scope.toLowerCase()} analytics`} actions={<Link className="btn btn-secondary" to="/reports/trends">View trends</Link>} />
       <div data-testid="reports-page" className="grid gap-4 md:grid-cols-4">
         <Stat label="Headcount" value={report.headcount} detail="Active employees" />
         <Stat label="Today attendance" value={`${attendanceRate}%`} detail={`${report.attendance.todayPresent}/${report.attendance.todayTotal} checked in`} />

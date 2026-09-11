@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { api } from '../../api/axiosInstance.js';
 import Layout from '../../components/Layout.jsx';
 import { ErrorText, PageHeader, Stat, StatusBadge } from '../../components/Ui.jsx';
+import OperationsWidgets from '../../components/OperationsWidgets.jsx';
 
 export default function EmployeeDashboard() {
   const [attendance, setAttendance] = useState([]);
@@ -42,6 +43,7 @@ export default function EmployeeDashboard() {
   return (
     <Layout>
       <PageHeader title="Employee Dashboard" eyebrow="Today" />
+      <OperationsWidgets />
       <div data-testid="employee-dashboard" className="grid gap-4 md:grid-cols-3">
         <Stat label="Attendance" value={todayRecord?.checkIn ? 'Checked in' : 'Not started'} detail={todayRecord?.checkIn ? new Date(todayRecord.checkIn).toLocaleTimeString() : 'No check-in today'} />
         <Stat label="Pending Leave" value={leaves.filter((leave) => leave.status === 'PENDING').length} detail="Open requests" />

@@ -1,0 +1,15 @@
+import { Megaphone, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import Layout from '../../components/Layout.jsx';
+import DataTable from '../../components/DataTable.jsx';
+import { ErrorText, PageHeader } from '../../components/Ui.jsx';
+import { api } from '../../api/axiosInstance.js';
+
+export default function Announcements() {
+  const [rows, setRows] = useState([]); const [departments, setDepartments] = useState([]); const [form, setForm] = useState({ title: '', body: '', departmentId: '', expiresAt: '' }); const [error, setError] = useState('');
+  async function load() { const [a, d] = await Promise.all([api.get('/announcements'), api.get('/departments')]); setRows(a.data); setDepartments(d.data); }
+  useEffect(() => { load().catch((err) => setError(err.message)); }, []);
+  async function submit(event) { event.preventDefault(); setError(''); try { await api.post('/announcements', { ...form, departmentId: form.departmentId || null, expiresAt: form.expiresAt || null }); setForm({ title: '', body: '', departmentId: '', expiresAt: '' }); await load(); } catch (err) { setError(err.message); } }
+  async function remove(id) { if (!window.confirm('Delete this announcement?')) return; try { await api.delete(`/announcements/${id}`); await load(); } catch (err) { setError(err.message); } }
+  return <Layout><PageHeader title="Announcements" eyebrow="Internal communications" description="Share company-wide or department-specific updates." /><form className="card grid gap-4 p-5 md:grid-cols-2" onSubmit={submit}><label className="text-sm font-semibold">Title<input className="field mt-2 w-full" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></label><label className="text-sm font-semibold">Audience<select className="field mt-2 w-full" value={form.departmentId} onChange={(e) => setForm({ ...form, departmentId: e.target.value })}><option value="">Company-wide</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></label><label className="text-sm font-semibold md:col-span-2">Message<textarea className="field mt-2 h-24 w-full" required value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} /></label><label className="text-sm font-semibold">Expires on<input className="field mt-2 w-full" type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} /></label><div className="flex items-end"><button className="btn btn-primary"><Megaphone size={16} /> Post announcement</button></div></form><ErrorText message={error} /><div className="mt-6"><DataTable testId="announcement-table" rows={rows} getKey={(row) => row.id} columns={[{ key: 'title', label: 'Title' }, { key: 'department', label: 'Audience', render: (row) => row.department?.name || 'Company-wide' }, { key: 'createdAt', label: 'Posted', render: (row) => new Date(row.createdAt).toLocaleDateString() }, { key: 'actions', label: 'Actions', render: (row) => <button className="btn btn-danger h-8" onClick={() => remove(row.id)}><Trash2 size={14} /> Delete</button> }]} /></div></Layout>;
+}

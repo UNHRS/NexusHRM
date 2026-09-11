@@ -8,31 +8,35 @@ datasource db {
 }
 
 model Department {
-  id          Int          @id @default(autoincrement())
-  name        String       @unique
-  employees   Employee[]
-  jobOpenings JobOpening[]
-  createdAt   DateTime     @default(now())
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  employees     Employee[]
+  jobOpenings   JobOpening[]
+  announcements Announcement[]
+  createdAt     DateTime       @default(now())
 }
 
 model Employee {
-  id              Int              @id @default(autoincrement())
+  id              Int                @id @default(autoincrement())
   fullName        String
-  email           String           @unique
+  email           String             @unique
   phone           String?
   designation     String
   joiningDate     DateTime
-  department      Department       @relation(fields: [departmentId], references: [id])
+  department      Department         @relation(fields: [departmentId], references: [id])
   departmentId    Int
   managerId       Int?
-  manager         Employee?        @relation("ManagerReports", fields: [managerId], references: [id])
-  reports         Employee[]       @relation("ManagerReports")
+  manager         Employee?          @relation("ManagerReports", fields: [managerId], references: [id])
+  reports         Employee[]         @relation("ManagerReports")
   user            User?
   attendance      Attendance[]
   leaveRequests   LeaveRequest[]
   salaryStructure SalaryStructure?
   payslips        Payslip[]
-  createdAt       DateTime         @default(now())
+  documents       EmployeeDocument[]
+  announcements   Announcement[]     @relation("AnnouncementAuthor")
+  auditLogs       AuditLog[]         @relation("AuditActor")
+  createdAt       DateTime           @default(now())
 }
 
 model User {
@@ -177,6 +181,56 @@ model Payslip {
   netPay          Decimal    @db.Decimal(10, 2)
 
   @@unique([payrollRunId, employeeId])
+}
+
+model Holiday {
+  id   Int      @id @default(autoincrement())
+  name String
+  date DateTime @unique @db.Date
+  year Int
+}
+
+model EmployeeDocument {
+  id         Int          @id @default(autoincrement())
+  employee   Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId Int
+  docType    DocumentType
+  fileName   String
+  filePath   String
+  uploadedAt DateTime     @default(now())
+  expiryDate DateTime?    @db.Date
+}
+
+enum DocumentType {
+  CITIZENSHIP
+  PASSPORT
+  CONTRACT
+  OFFER_LETTER
+  WORK_PERMIT
+  OTHER
+}
+
+model Announcement {
+  id           Int         @id @default(autoincrement())
+  title        String
+  body         String
+  postedBy     Employee    @relation("AnnouncementAuthor", fields: [postedById], references: [id])
+  postedById   Int
+  department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId Int?
+  createdAt    DateTime    @default(now())
+  expiresAt    DateTime?
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  actor      Employee @relation("AuditActor", fields: [actorId], references: [id])
+  actorId    Int
+  action     String
+  targetType String
+  targetId   Int
+  metadata   Json?
+  createdAt  DateTime @default(now())
 }
 
 enum CandidateStage {

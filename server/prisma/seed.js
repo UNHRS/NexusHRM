@@ -36,7 +36,8 @@ async function createEmployee({ user, employee }) {
 }
 
 async function main() {
-  await prisma.$executeRawUnsafe('TRUNCATE TABLE "Candidate", "JobOpening", "LeaveRequest", "Attendance", "User", "Employee", "Department" RESTART IDENTITY CASCADE');
+  await prisma.$executeRawUnsafe('TRUNCATE TABLE "AuditLog", "Announcement", "EmployeeDocument", "Holiday", "Candidate", "JobOpening", "LeaveRequest", "Attendance", "Payslip", "PayrollRun", "SalaryStructure", "User", "Employee", "Department" RESTART IDENTITY CASCADE');
+  const currentYear = new Date().getUTCFullYear();
 
   const recruitment = await prisma.department.create({ data: { name: 'Recruitment Operations' } });
   const documentation = await prisma.department.create({ data: { name: 'Documentation' } });
@@ -123,6 +124,20 @@ async function main() {
       return { employeeId: employee.id, basicSalary, allowances, effectiveFrom: new Date('2023-01-01') };
     })
   });
+  await prisma.holiday.createMany({
+    data: [
+      ['Nepali New Year (Baisakh 1)', `${currentYear}-04-14`],
+      ['Buddha Jayanti', `${currentYear}-05-12`],
+      ['Constitution Day', `${currentYear}-09-19`],
+      ['Dashain - Ghatasthapana', `${currentYear}-10-11`],
+      ['Dashain - Fulpati', `${currentYear}-10-17`],
+      ['Dashain - Tika', `${currentYear}-10-21`],
+      ['Tihar - Laxmi Puja', `${currentYear}-11-08`],
+      ['Tihar - Bhai Tika', `${currentYear}-11-12`],
+      ['Christmas Day', `${currentYear}-12-25`]
+    ].map(([name, date]) => ({ name, date: new Date(`${date}T00:00:00.000Z`), year: currentYear }))
+  });
+  await prisma.announcement.create({ data: { title: 'Welcome to the new Nexus Operations workspace', body: 'Payroll, attendance, leave, and employee records now live in one place.', postedById: admin.id } });
   for (const employee of allEmployees) {
     for (let offset = 13; offset >= 0; offset -= 1) {
       const date = daysAgo(offset);
