@@ -11,13 +11,15 @@ export default function AdminDashboard() {
   const [departments, setDepartments] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [leaves, setLeaves] = useState([]);
+  const [payrollRuns, setPayrollRuns] = useState([]);
 
   useEffect(() => {
-    Promise.all([api.get('/employees'), api.get('/departments'), api.get('/attendance/all'), api.get('/leave/all')]).then(([e, d, a, l]) => {
+    Promise.all([api.get('/employees'), api.get('/departments'), api.get('/attendance/all'), api.get('/leave/all'), api.get('/payroll/runs')]).then(([e, d, a, l, p]) => {
       setEmployees(e.data);
       setDepartments(d.data);
       setAttendance(a.data);
       setLeaves(l.data);
+      setPayrollRuns(p.data);
     });
   }, []);
 
@@ -27,13 +29,13 @@ export default function AdminDashboard() {
 
   return (
     <Layout>
-      <PageHeader title="Overview" eyebrow="Company operations" description="A current view of your people, time, and workplace activity." actions={<button className="btn btn-secondary" disabled title="Payroll is not configured yet"><DollarSign size={16} /> Generate payroll</button>} />
+      <PageHeader title="Overview" eyebrow="Company operations" description="A current view of your people, time, and workplace activity." actions={<Link className="btn btn-primary" to="/admin/payroll"><DollarSign size={16} /> Generate payroll</Link>} />
       <div data-testid="admin-dashboard" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <Stat label="Total employees" value={employees.length} detail="Active records" />
         <Stat label="Departments" value={departments.length} detail="Active teams" />
         <Stat label="Today’s attendance" value={`${presentPct}%`} detail={`${todayRows.length} records logged`} />
         <Stat label="Pending leave" value={leaves.filter((l) => l.status === 'PENDING').length} detail="Awaiting approval" />
-        <Stat label="Payroll status" value="Not configured" detail="Connect payroll to enable" />
+        <Stat label="Payroll status" value={payrollRuns[0]?.status || 'Not started'} detail={payrollRuns[0] ? `${payrollRuns[0].month}/${payrollRuns[0].year}` : 'Generate first run'} />
       </div>
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <section className="card p-5"><div className="flex items-center justify-between"><div><h2 className="text-[18px] font-semibold">Attendance breakdown</h2><p className="mt-1 text-sm text-muted">Today across all employees</p></div><CalendarCheck size={19} className="text-muted" /></div><div className="mt-6 space-y-5">{[['Present', todayRows.filter((r) => r.status === 'PRESENT').length, 'bg-success'], ['Late', todayRows.filter((r) => r.status === 'LATE').length, 'bg-warning'], ['Half-day', todayRows.filter((r) => r.status === 'HALF_DAY').length, 'bg-sky-600'], ['Absent', Math.max(0, employees.length - todayRows.length), 'bg-destructive']].map(([label, value, color]) => <div key={label}><div className="mb-2 flex justify-between text-sm"><span className="font-medium">{label}</span><span className="font-mono text-muted">{value}</span></div><div className="h-2 rounded-full bg-slate-100"><div className={`h-2 rounded-full ${color}`} style={{ width: `${employees.length ? Math.max(2, (value / employees.length) * 100) : 0}%` }} /></div></div>)}</div></section>

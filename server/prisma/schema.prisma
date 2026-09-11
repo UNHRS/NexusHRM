@@ -8,29 +8,31 @@ datasource db {
 }
 
 model Department {
-  id        Int        @id @default(autoincrement())
-  name      String     @unique
-  employees Employee[]
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  employees   Employee[]
   jobOpenings JobOpening[]
-  createdAt DateTime   @default(now())
+  createdAt   DateTime     @default(now())
 }
 
 model Employee {
-  id            Int            @id @default(autoincrement())
-  fullName      String
-  email         String         @unique
-  phone         String?
-  designation   String
-  joiningDate   DateTime
-  department    Department     @relation(fields: [departmentId], references: [id])
-  departmentId  Int
-  managerId     Int?
-  manager       Employee?      @relation("ManagerReports", fields: [managerId], references: [id])
-  reports       Employee[]     @relation("ManagerReports")
-  user          User?
-  attendance    Attendance[]
-  leaveRequests LeaveRequest[]
-  createdAt     DateTime       @default(now())
+  id              Int              @id @default(autoincrement())
+  fullName        String
+  email           String           @unique
+  phone           String?
+  designation     String
+  joiningDate     DateTime
+  department      Department       @relation(fields: [departmentId], references: [id])
+  departmentId    Int
+  managerId       Int?
+  manager         Employee?        @relation("ManagerReports", fields: [managerId], references: [id])
+  reports         Employee[]       @relation("ManagerReports")
+  user            User?
+  attendance      Attendance[]
+  leaveRequests   LeaveRequest[]
+  salaryStructure SalaryStructure?
+  payslips        Payslip[]
+  createdAt       DateTime         @default(now())
 }
 
 model User {
@@ -95,16 +97,16 @@ enum LeaveStatus {
 }
 
 model JobOpening {
-  id           Int             @id @default(autoincrement())
-  title        String
-  department   Department      @relation(fields: [departmentId], references: [id])
-  departmentId Int
-  location     String
+  id             Int            @id @default(autoincrement())
+  title          String
+  department     Department     @relation(fields: [departmentId], references: [id])
+  departmentId   Int
+  location       String
   employmentType EmploymentType @default(FULL_TIME)
-  status       JobStatus       @default(OPEN)
-  description  String?
-  candidates   Candidate[]
-  createdAt    DateTime        @default(now())
+  status         JobStatus      @default(OPEN)
+  description    String?
+  candidates     Candidate[]
+  createdAt      DateTime       @default(now())
 }
 
 enum EmploymentType {
@@ -121,16 +123,60 @@ enum JobStatus {
 }
 
 model Candidate {
-  id           Int             @id @default(autoincrement())
+  id           Int            @id @default(autoincrement())
   fullName     String
   email        String
   phone        String?
   source       String?
-  stage        CandidateStage  @default(APPLIED)
-  jobOpening   JobOpening      @relation(fields: [jobOpeningId], references: [id])
+  stage        CandidateStage @default(APPLIED)
+  jobOpening   JobOpening     @relation(fields: [jobOpeningId], references: [id])
   jobOpeningId Int
   notes        String?
-  createdAt    DateTime        @default(now())
+  createdAt    DateTime       @default(now())
+}
+
+model SalaryStructure {
+  id            Int      @id @default(autoincrement())
+  employee      Employee @relation(fields: [employeeId], references: [id])
+  employeeId    Int      @unique
+  basicSalary   Decimal  @db.Decimal(10, 2)
+  allowances    Decimal  @default(0) @db.Decimal(10, 2)
+  effectiveFrom DateTime @db.Date
+}
+
+model PayrollRun {
+  id          Int           @id @default(autoincrement())
+  month       Int
+  year        Int
+  status      PayrollStatus @default(DRAFT)
+  generatedAt DateTime      @default(now())
+  payslips    Payslip[]
+
+  @@unique([month, year])
+}
+
+enum PayrollStatus {
+  DRAFT
+  FINALIZED
+}
+
+model Payslip {
+  id              Int        @id @default(autoincrement())
+  payrollRun      PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  payrollRunId    Int
+  employee        Employee   @relation(fields: [employeeId], references: [id])
+  employeeId      Int
+  basicSalary     Decimal    @db.Decimal(10, 2)
+  allowances      Decimal    @db.Decimal(10, 2)
+  workingDays     Int
+  presentDays     Decimal    @db.Decimal(4, 1)
+  unpaidLeaveDays Decimal    @default(0) @db.Decimal(4, 1)
+  lateDeduction   Decimal    @default(0) @db.Decimal(10, 2)
+  grossPay        Decimal    @db.Decimal(10, 2)
+  totalDeductions Decimal    @db.Decimal(10, 2)
+  netPay          Decimal    @db.Decimal(10, 2)
+
+  @@unique([payrollRunId, employeeId])
 }
 
 enum CandidateStage {

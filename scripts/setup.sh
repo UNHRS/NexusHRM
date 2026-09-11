@@ -5,8 +5,8 @@ command -v docker >/dev/null || { echo "Docker is required."; exit 1; }
 command -v node >/dev/null || { echo "Node.js is required."; exit 1; }
 command -v npm >/dev/null || { echo "npm is required."; exit 1; }
 
-echo "Starting Postgres and Adminer..."
-docker compose up -d
+echo "Starting Postgres and Adminer on localhost:55432..."
+docker compose up -d postgres adminer
 
 echo "Installing server dependencies..."
 cd server
@@ -14,8 +14,8 @@ if [[ ! -f .env ]]; then
   cp .env.example .env
 fi
 npm install
-echo "Running Prisma migration..."
-npx prisma migrate dev --name init
+echo "Applying Prisma migrations..."
+npx prisma migrate deploy
 echo "Seeding database..."
 npm run seed
 

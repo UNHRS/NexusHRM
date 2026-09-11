@@ -13,6 +13,8 @@ import MyAttendance from './pages/employee/MyAttendance.jsx';
 import MyLeave from './pages/employee/MyLeave.jsx';
 import Recruitment from './pages/Recruitment.jsx';
 import Reports from './pages/Reports.jsx';
+import Payroll from './pages/admin/Payroll.jsx';
+import Payslips from './pages/employee/Payslips.jsx';
 
 export default function App() {
   return (
@@ -22,6 +24,7 @@ export default function App() {
       <Route path="/admin/dashboard" element={<ProtectedRoute roles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/employees" element={<ProtectedRoute roles={['ADMIN']}><Employees /></ProtectedRoute>} />
       <Route path="/admin/departments" element={<ProtectedRoute roles={['ADMIN']}><Departments /></ProtectedRoute>} />
+      <Route path="/admin/payroll" element={<ProtectedRoute roles={['ADMIN']}><Payroll /></ProtectedRoute>} />
       <Route path="/manager" element={<Navigate to="/manager/dashboard" replace />} />
       <Route path="/manager/dashboard" element={<ProtectedRoute roles={['MANAGER']}><ManagerDashboard /></ProtectedRoute>} />
       <Route path="/manager/team-attendance" element={<ProtectedRoute roles={['MANAGER']}><TeamAttendance /></ProtectedRoute>} />
@@ -33,6 +36,7 @@ export default function App() {
       <Route path="/employee/profile" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><MyProfile /></ProtectedRoute>} />
       <Route path="/employee/attendance" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><MyAttendance /></ProtectedRoute>} />
       <Route path="/employee/leave" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><MyLeave /></ProtectedRoute>} />
+      <Route path="/employee/payslips" element={<ProtectedRoute roles={['EMPLOYEE', 'MANAGER', 'ADMIN']}><Payslips /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

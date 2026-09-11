@@ -2,15 +2,14 @@
 
 ## 1. Start The App
 
-This machine already has port `5432` in use, so use `55432` for Docker Postgres.
+Docker Postgres uses host port `55432` by default so it does not collide with a local PostgreSQL service.
 
 ```bash
-POSTGRES_PORT=55432 docker compose up -d
+docker compose up -d postgres adminer
 cd server
 cp .env.example .env
-perl -0pi -e 's/localhost:5432/localhost:55432/' .env
 npm install
-npx prisma migrate dev
+npx prisma migrate deploy
 npm run seed
 npm start
 ```
@@ -28,6 +27,10 @@ Open:
 ```text
 http://localhost:5173
 ```
+
+## Payroll demo
+
+Use the seeded `admin` account to open `/admin/payroll`, generate the current month, review the payslips, and finalize the run. Then sign in as `employee.aasha` and open `/employee/payslips`. Payroll generation is real database work; the seed provides salary structures and attendance/leave records for all nine demo employees.
 
 Seeded users all use password `password123`.
 
@@ -129,16 +132,16 @@ qa/report.html
 
 ## 6. Troubleshooting
 
-If Docker fails on port `5432`, use:
+If Docker fails on port `55432`, use another host port:
 
 ```bash
-POSTGRES_PORT=55432 docker compose up -d
+POSTGRES_PORT=55433 docker compose up -d postgres adminer
 ```
 
 Then make sure `server/.env` uses:
 
 ```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:55432/nexus_hrm
+DATABASE_URL=postgresql://postgres:postgres@localhost:55433/nexus_hrm
 ```
 
 If Selenium fails with a ChromeDriver version mismatch, the QA fixture should auto-detect local Chromium. You can override manually:

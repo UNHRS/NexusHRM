@@ -17,7 +17,9 @@ const employeeSchema = z.object({
   managerId: z.coerce.number().int().optional().nullable(),
   username: z.string().min(3).optional(),
   password: z.string().min(6).optional(),
-  role: z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE']).optional()
+  role: z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE']).optional(),
+  basicSalary: z.preprocess((value) => value === '' ? undefined : value, z.coerce.number().positive().optional()),
+  allowances: z.preprocess((value) => value === '' ? undefined : value, z.coerce.number().min(0).optional())
 });
 
 const profileSchema = z.object({
@@ -25,7 +27,7 @@ const profileSchema = z.object({
   email: z.string().email().optional()
 });
 
-const include = { department: true, manager: { select: { id: true, fullName: true } }, user: { select: { username: true, role: true } } };
+const include = { department: true, manager: { select: { id: true, fullName: true } }, user: { select: { username: true, role: true } }, salaryStructure: true };
 
 router.use(requireAuth);
 
@@ -71,6 +73,9 @@ router.post('/', requireRole(['ADMIN']), async (req, res, next) => {
         managerId: body.managerId || null
       }
     });
+    if (body.basicSalary !== undefined) {
+      await prisma.salaryStructure.create({ data: { employeeId: employee.id, basicSalary: body.basicSalary, allowances: body.allowances || 0, effectiveFrom: new Date() } });
+    }
     if (body.username && body.password) {
       await prisma.user.create({
         data: {
@@ -130,6 +135,9 @@ router.put('/:id', async (req, res, next) => {
           employeeId: id
         }
       });
+    }
+    if (req.user.role === 'ADMIN' && data.basicSalary !== undefined) {
+      await prisma.salaryStructure.upsert({ where: { employeeId: id }, update: { basicSalary: data.basicSalary, allowances: data.allowances || 0 }, create: { employeeId: id, basicSalary: data.basicSalary, allowances: data.allowances || 0, effectiveFrom: new Date() } });
     }
     res.json(await prisma.employee.findUnique({ where: { id }, include }));
   } catch (err) {

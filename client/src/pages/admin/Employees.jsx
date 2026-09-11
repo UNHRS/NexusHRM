@@ -15,7 +15,9 @@ const blank = {
   managerId: '',
   username: '',
   password: 'password123',
-  role: 'EMPLOYEE'
+  role: 'EMPLOYEE',
+  basicSalary: '',
+  allowances: ''
 };
 
 export default function Employees() {
@@ -59,7 +61,9 @@ export default function Employees() {
       managerId: employee.managerId ? String(employee.managerId) : '',
       username: employee.user?.username || '',
       password: '',
-      role: employee.user?.role || 'EMPLOYEE'
+      role: employee.user?.role || 'EMPLOYEE',
+      basicSalary: employee.salaryStructure?.basicSalary || '',
+      allowances: employee.salaryStructure?.allowances || ''
     });
   }
 
@@ -124,6 +128,8 @@ export default function Employees() {
         </select>
         <input data-testid="employee-username-input" className="field" placeholder="Username" value={form.username} onChange={(e) => patch('username', e.target.value)} />
         <input className="field" placeholder={editing ? 'New password optional' : 'Password'} value={form.password} onChange={(e) => patch('password', e.target.value)} />
+        <input className="field" type="number" min="0" step="0.01" placeholder="Basic salary (optional)" value={form.basicSalary} onChange={(e) => patch('basicSalary', e.target.value)} />
+        <input className="field" type="number" min="0" step="0.01" placeholder="Allowances (optional)" value={form.allowances} onChange={(e) => patch('allowances', e.target.value)} />
         <div className="flex gap-2 md:col-span-2">
           <button data-testid="employee-save-button" className="btn btn-primary"><Plus size={16} /> {editing ? 'Save employee' : 'Add employee'}</button>
           {editing && <button type="button" className="btn btn-secondary" onClick={reset}><X size={16} /> Cancel</button>}
