@@ -41,14 +41,14 @@ export default function Login() {
             <span className="mb-2 block text-sm font-semibold">Username</span>
             <div className="relative">
               <User className="pointer-events-none absolute left-3 top-2.5 text-muted" size={16} />
-              <input data-testid="username-input" className="field w-full pl-9" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+              <input data-testid="username-input" className="field w-full pl-9" aria-label="Username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
             </div>
           </label>
           <label className="block">
             <span className="mb-2 block text-sm font-semibold">Password</span>
             <div className="relative">
               <Lock className="pointer-events-none absolute left-3 top-2.5 text-muted" size={16} />
-              <input data-testid="password-input" type={showPassword ? 'text' : 'password'} className="field w-full pl-9 pr-10" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+              <input data-testid="password-input" type={showPassword ? 'text' : 'password'} className="field w-full pl-9 pr-10" aria-label="Password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
               <button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute right-2 top-1.5 rounded-md p-1.5 text-muted hover:bg-slate-100" onClick={() => setShowPassword((value) => !value)}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
             </div>
           </label>
