@@ -1,6 +1,6 @@
 # Nexus HRM
 
-Nexus HRM is a full-stack human resources management app with real authentication, PostgreSQL persistence, role-based permissions, employee and department CRUD, attendance tracking, leave workflows, Selenium QA tests, and Postman/Newman API tests.
+Nexus HRM is a full-stack human resources management app with real authentication, PostgreSQL persistence, role-based permissions, employee and department CRUD, attendance tracking, leave workflows, deterministic payroll, Selenium QA tests, and Postman/Newman API tests.
 
 ## Stack
 
@@ -17,14 +17,14 @@ Assumes Node.js, npm, Docker, and Docker Compose are installed.
 ./scripts/setup.sh
 ```
 
-Manual setup:
+Manual setup (the app uses Docker Postgres on port `55432` so it does not collide with a local PostgreSQL service):
 
 ```bash
-docker compose up -d
+docker compose up -d postgres adminer
 cd server
 cp .env.example .env
 npm install
-npx prisma migrate dev --name init
+npx prisma migrate deploy
 npm run seed
 
 cd ../client
@@ -43,11 +43,11 @@ Then open:
 - API health: http://localhost:5000/health
 - Adminer: http://localhost:8080
 
-If port `5432` is already in use locally, start Docker with another host port and update `server/.env`:
+If `55432` is unavailable, choose another host port and keep `DATABASE_URL` in `server/.env` aligned:
 
 ```bash
-POSTGRES_PORT=55432 docker compose up -d
-DATABASE_URL=postgresql://postgres:postgres@localhost:55432/nexus_hrm
+POSTGRES_PORT=55433 docker compose up -d postgres adminer
+DATABASE_URL=postgresql://postgres:postgres@localhost:55433/nexus_hrm
 ```
 
 ## Seeded Users
@@ -71,6 +71,8 @@ All seeded users use password `password123`.
 - Admins can manage employees and departments, view company-wide attendance, and approve/reject any pending leave.
 - Managers can view direct-report attendance and approve/reject leave for direct reports.
 - Employees can update limited profile fields, check in/out, submit leave, and view their own attendance and leave history.
+- Admins can generate monthly payroll from attendance and approved leave, review Decimal-backed payslips, and finalize runs to lock recalculation.
+- Employees can view finalized payslips at `/employee/payslips`.
 
 ## API
 
@@ -83,6 +85,7 @@ Key route groups:
 - `/departments`: department CRUD
 - `/attendance`: check-in/out, own/team/all attendance
 - `/leave`: apply, own history, pending approvals, approve/reject
+- `/payroll`: generate/finalize runs, admin history, and finalized employee payslips
 
 Use the Postman collection in `postman/` for executable API documentation.
 
@@ -124,7 +127,19 @@ Or from the repo root:
 Server settings live in `server/.env`.
 
 ```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nexus_hrm
+DATABASE_URL=postgresql://postgres:postgres@localhost:55432/nexus_hrm
 JWT_SECRET=change_this_secret
 PORT=5000
 ```
+
+Use `localhost:55432` in `DATABASE_URL` for the default Docker setup.
+
+## Payroll workflow
+
+1. Sign in as `admin`.
+2. Open **Payroll**, choose a month and year, and select **Generate payroll**.
+3. Review the attendance, unpaid leave, late deduction, gross, deductions, and net columns.
+4. Select **Finalize payroll** to lock the run. Finalized runs cannot be recalculated.
+5. Sign in as an employee and open **My payslips** to view finalized results.
+
+Payroll requires a salary structure for every employee. The seed creates salary structures for all demo users. Newly created employees must receive a salary structure before they can be included in a payroll run.

@@ -106,6 +106,23 @@ async function main() {
   }
 
   const allEmployees = [admin, managerA, managerB, ...employees];
+  const salaryByDesignation = {
+    'HR Director': [180000, 25000],
+    'Recruitment Manager': [125000, 18000],
+    'Documentation Manager': [120000, 16000],
+    'Talent Acquisition Associate': [65000, 8000],
+    'Sourcing Specialist': [60000, 7000],
+    'Onboarding Coordinator': [62000, 7500],
+    'Documentation Officer': [58000, 6500],
+    'Records Analyst': [56000, 6000],
+    'Compliance Assistant': [52000, 5000]
+  };
+  await prisma.salaryStructure.createMany({
+    data: allEmployees.map((employee) => {
+      const [basicSalary, allowances] = salaryByDesignation[employee.designation] || [50000, 5000];
+      return { employeeId: employee.id, basicSalary, allowances, effectiveFrom: new Date('2023-01-01') };
+    })
+  });
   for (const employee of allEmployees) {
     for (let offset = 13; offset >= 0; offset -= 1) {
       const date = daysAgo(offset);

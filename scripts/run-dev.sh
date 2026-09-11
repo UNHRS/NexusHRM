@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Starting Postgres..."
+echo "Starting Postgres on localhost:55432..."
 docker compose up -d postgres adminer
 
 cleanup() {

@@ -10,7 +10,7 @@ export default function ProtectedRoute({ roles, children }) {
 }
 
 export function routeForRole(role) {
-  if (role === 'ADMIN') return '/admin';
-  if (role === 'MANAGER') return '/manager';
-  return '/employee';
+  if (role === 'ADMIN') return '/admin/dashboard';
+  if (role === 'MANAGER') return '/manager/dashboard';
+  return '/employee/dashboard';
 }

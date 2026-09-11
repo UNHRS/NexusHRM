@@ -15,7 +15,9 @@ const blank = {
   managerId: '',
   username: '',
   password: 'password123',
-  role: 'EMPLOYEE'
+  role: 'EMPLOYEE',
+  basicSalary: '',
+  allowances: ''
 };
 
 export default function Employees() {
@@ -24,6 +26,7 @@ export default function Employees() {
   const [form, setForm] = useState(blank);
   const [editing, setEditing] = useState(null);
   const [filter, setFilter] = useState('');
+  const [search, setSearch] = useState('');
   const [error, setError] = useState('');
 
   async function load() {
@@ -35,7 +38,12 @@ export default function Employees() {
   useEffect(() => { load(); }, []);
 
   const managers = employees.filter((employee) => ['ADMIN', 'MANAGER'].includes(employee.user?.role));
-  const visible = useMemo(() => (filter ? employees.filter((employee) => String(employee.departmentId) === filter) : employees), [employees, filter]);
+  const visible = useMemo(() => employees.filter((employee) => {
+    const matchesDepartment = !filter || String(employee.departmentId) === filter;
+    const query = search.trim().toLowerCase();
+    const matchesSearch = !query || [employee.fullName, employee.email, employee.designation].some((value) => value?.toLowerCase().includes(query));
+    return matchesDepartment && matchesSearch;
+  }), [employees, filter, search]);
 
   function patch(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -53,7 +61,9 @@ export default function Employees() {
       managerId: employee.managerId ? String(employee.managerId) : '',
       username: employee.user?.username || '',
       password: '',
-      role: employee.user?.role || 'EMPLOYEE'
+      role: employee.user?.role || 'EMPLOYEE',
+      basicSalary: employee.salaryStructure?.basicSalary || '',
+      allowances: employee.salaryStructure?.allowances || ''
     });
   }
 
@@ -93,8 +103,10 @@ export default function Employees() {
       <PageHeader
         title="Employees"
         eyebrow="People records"
-        actions={<select className="field" value={filter} onChange={(e) => setFilter(e.target.value)}><option value="">All departments</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select>}
+        description={`${employees.length} active employee records`}
+        actions={<button className="btn btn-primary" onClick={() => document.querySelector('[data-testid="employee-name-input"]')?.focus()}><Plus size={16} /> Add employee</button>}
       />
+      <div className="card mb-4 flex flex-col gap-3 p-4 sm:flex-row"><input data-testid="employee-search" className="field flex-1" placeholder="Search name, email, or designation" value={search} onChange={(e) => setSearch(e.target.value)} /><select aria-label="Filter by department" className="field sm:w-56" value={filter} onChange={(e) => setFilter(e.target.value)}><option value="">All departments</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select>{(search || filter) && <button className="btn btn-secondary" type="button" onClick={() => { setSearch(''); setFilter(''); }}>Reset</button>}</div>
       <form data-testid="employee-form" onSubmit={submit} className="card mb-4 grid gap-3 p-4 md:grid-cols-4">
         <input data-testid="employee-name-input" required className="field" placeholder="Full name" value={form.fullName} onChange={(e) => patch('fullName', e.target.value)} />
         <input data-testid="employee-email-input" required type="email" className="field" placeholder="Email" value={form.email} onChange={(e) => patch('email', e.target.value)} />
@@ -116,6 +128,8 @@ export default function Employees() {
         </select>
         <input data-testid="employee-username-input" className="field" placeholder="Username" value={form.username} onChange={(e) => patch('username', e.target.value)} />
         <input className="field" placeholder={editing ? 'New password optional' : 'Password'} value={form.password} onChange={(e) => patch('password', e.target.value)} />
+        <input className="field" type="number" min="0" step="0.01" placeholder="Basic salary (optional)" value={form.basicSalary} onChange={(e) => patch('basicSalary', e.target.value)} />
+        <input className="field" type="number" min="0" step="0.01" placeholder="Allowances (optional)" value={form.allowances} onChange={(e) => patch('allowances', e.target.value)} />
         <div className="flex gap-2 md:col-span-2">
           <button data-testid="employee-save-button" className="btn btn-primary"><Plus size={16} /> {editing ? 'Save employee' : 'Add employee'}</button>
           {editing && <button type="button" className="btn btn-secondary" onClick={reset}><X size={16} /> Cancel</button>}
