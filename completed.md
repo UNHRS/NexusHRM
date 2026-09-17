@@ -115,7 +115,27 @@ This file records the features currently implemented in the application.
   - 9 employees produce 9 payslips.
   - Draft payroll finalizes successfully.
   - Recalculation after finalization returns `409`.
-  - Employees receive finalized payslip data only.
+- Employees receive finalized payslip data only.
+
+## Phase 2 operations and compliance
+
+- Holiday calendar with admin CRUD and year filtering.
+- Nine seeded Nepali public holidays for the current year.
+- Holidays excluded from payroll working-day calculations.
+- Shared upcoming-holiday dashboard widget.
+- Payroll trend, leave trend, and attendance trend API endpoints.
+- Reports trends page with selectable 3, 6, and 12 month ranges.
+- Empty states for missing finalized payroll and historical trend data.
+- Local employee document storage under `server/uploads/documents/{employeeId}`.
+- Document upload with file type, metadata, and optional expiry date.
+- Employee document list, download authorization, and admin deletion.
+- Expiring-document API and admin dashboard alert widget.
+- Company-wide and department-specific announcements.
+- Announcement expiry filtering and role-aware visibility.
+- Admin announcement management page.
+- Audit log model and paginated admin API.
+- Audit entries for employee changes, leave decisions, payroll finalization, announcements, and document deletion/upload.
+- Admin audit log page with target-type filtering.
 
 ## Not implemented / intentionally deferred
 

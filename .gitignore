@@ -9,6 +9,7 @@ coverage/
 report.html
 postman/report.html
 backups/*.sql
+server/uploads/
 __pycache__/
 .pytest_cache/
 .venv/
