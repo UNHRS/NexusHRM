@@ -9,7 +9,8 @@ router.use(requireAuth);
 router.use(requireRole(['ADMIN', 'MANAGER']));
 
 function trendPeriods(months) {
-  const count = Math.min(Math.max(Number(months || 6), 1), 12);
+  const parsed = Number(months);
+  const count = Math.min(Math.max(Number.isInteger(parsed) ? parsed : 6, 1), 12);
   const now = new Date();
   return Array.from({ length: count }, (_, index) => {
     const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (count - index - 1), 1));

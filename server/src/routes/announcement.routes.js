@@ -12,7 +12,11 @@ const schema = z.object({ title: z.string().min(2), body: z.string().min(2), dep
 router.get('/', async (req, res, next) => {
   try {
     const now = new Date();
-    res.json(await prisma.announcement.findMany({ where: { OR: [{ departmentId: null }, { departmentId: req.user.employee.departmentId }], AND: [{ OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] }] }, include: { postedBy: { select: { fullName: true } }, department: { select: { name: true } } }, orderBy: { createdAt: 'desc' } }));
+    const where = { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] };
+    if (req.user.role !== 'ADMIN') {
+      where.AND = [{ OR: [{ departmentId: null }, { departmentId: req.user.employee.departmentId }] }];
+    }
+    res.json(await prisma.announcement.findMany({ where, include: { postedBy: { select: { fullName: true } }, department: { select: { name: true } } }, orderBy: { createdAt: 'desc' } }));
   } catch (err) { next(err); }
 });
 

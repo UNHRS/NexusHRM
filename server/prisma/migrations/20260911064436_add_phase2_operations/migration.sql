@@ -40,7 +40,7 @@ CREATE TABLE "Announcement" (
 -- CreateTable
 CREATE TABLE "AuditLog" (
     "id" SERIAL NOT NULL,
-    "actorId" INTEGER NOT NULL,
+    "actorId" INTEGER,
     "action" TEXT NOT NULL,
     "targetType" TEXT NOT NULL,
     "targetId" INTEGER NOT NULL,
@@ -63,4 +63,4 @@ ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_postedById_fkey" FOREIGN
 ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_departmentId_fkey" FOREIGN KEY ("departmentId") REFERENCES "Department"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "Employee"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "Employee"("id") ON DELETE SET NULL ON UPDATE CASCADE;

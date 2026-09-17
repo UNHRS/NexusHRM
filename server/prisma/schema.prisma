@@ -224,8 +224,8 @@ model Announcement {
 
 model AuditLog {
   id         Int      @id @default(autoincrement())
-  actor      Employee @relation("AuditActor", fields: [actorId], references: [id])
-  actorId    Int
+  actor      Employee? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  actorId    Int?
   action     String
   targetType String
   targetId   Int

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
@@ -17,7 +18,7 @@ const storage = multer.diskStorage({
     fs.mkdirSync(directory, { recursive: true });
     callback(null, directory);
   },
-  filename: (req, file, callback) => callback(null, `${Date.now()}-${path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_')}`)
+  filename: (req, file, callback) => callback(null, `${Date.now()}-${randomUUID()}-${path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_')}`)
 });
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 

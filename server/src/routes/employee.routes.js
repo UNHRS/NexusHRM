@@ -152,12 +152,14 @@ router.put('/:id', async (req, res, next) => {
 router.delete('/:id', requireRole(['ADMIN']), async (req, res, next) => {
   try {
     const id = Number(req.params.id);
+    const employee = await prisma.employee.findUnique({ where: { id }, select: { id: true } });
+    if (!employee) return res.status(404).json({ error: 'Employee not found' });
+    await logAction({ actorId: req.user.employeeId, action: 'EMPLOYEE_DELETED', targetType: 'Employee', targetId: id });
     await prisma.user.deleteMany({ where: { employeeId: id } });
     await prisma.attendance.deleteMany({ where: { employeeId: id } });
     await prisma.leaveRequest.deleteMany({ where: { employeeId: id } });
     await prisma.employee.updateMany({ where: { managerId: id }, data: { managerId: null } });
     await prisma.employee.delete({ where: { id } });
-    await logAction({ actorId: req.user.employeeId, action: 'EMPLOYEE_DELETED', targetType: 'Employee', targetId: id });
     res.json({ ok: true });
   } catch (err) {
     next(err);
